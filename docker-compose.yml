@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: compagnie
+      MARIADB_USER: sbuser
+      MARIADB_PASSWORD: sbpass
+      MARIADB_ROOT_PASSWORD: rootpass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3307:3306"   # optional expose to host
+    networks:
+      - appnet
+
+  backend:
+    build:
+      context: .   # adjust path if your Spring Boot project root differs
+      dockerfile: Dockerfile
+    container_name: backend
+    depends_on:
+      - mariadb
+    environment:
+      # Spring datasource (use the service name 'mariadb' as host)
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/compagnie
+      SPRING_DATASOURCE_USERNAME: sbuser
+      SPRING_DATASOURCE_PASSWORD: sbpass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # Dev basic auth (if you still require it)
+      SPRING_SECURITY_USER_NAME: user
+      SPRING_SECURITY_USER_PASSWORD: pass
+      # (Optional) JVM opts
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    ports:
+      - "8080:8080"
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ./src/main/webapp/reactjs   # React app folder
+      dockerfile: Dockerfile
+    container_name: frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"      # http://localhost:3000
+    networks:
+      - appnet
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    depends_on:
+      - backend
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    ports:
+      - "9090:9090"    # http://localhost:9090
+    networks:
+      - appnet
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3001:3000"   # http://localhost:3001
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - appnet
+
+volumes:
+  mariadb_data:
+  prom_data:
+  grafana_data:
+
+networks:
+  appnet:
+    driver: bridge
+

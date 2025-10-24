@@ -1,0 +1,8 @@
+/home/kali/SpringDataRest/src/main/java/org/cours/SpringDataRestApplication.java
+/home/kali/SpringDataRest/src/main/java/org/cours/config/RestCorsConfig.java
+/home/kali/SpringDataRest/src/main/java/org/cours/config/SecurityConfig.java
+/home/kali/SpringDataRest/src/main/java/org/cours/modele/Proprietaire.java
+/home/kali/SpringDataRest/src/main/java/org/cours/modele/ProprietaireRepo.java
+/home/kali/SpringDataRest/src/main/java/org/cours/modele/Voiture.java
+/home/kali/SpringDataRest/src/main/java/org/cours/modele/VoitureRepo.java
+/home/kali/SpringDataRest/src/main/java/org/cours/web/VoitureController.java
